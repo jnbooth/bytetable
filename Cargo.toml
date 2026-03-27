@@ -1,0 +1,16 @@
+[package]
+name = "byte-table"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.87"
+license = "MIT"
+authors = ["Joshua Booth <joshua.n.booth@gmail.com>"]
+description = "High-performance 256-length array indexed by u8"
+repository = "https://github.com/jnbooth/byte-table"
+readme = "README.md"
+keywords = ["no-std", "array", "table"]
+categories = ["data-structures", "no-std"]
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+inline_always = "allow"
