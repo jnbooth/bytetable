@@ -2,7 +2,7 @@
 name = "byte-table"
 version = "1.0.0"
 edition = "2021"
-rust-version = "1.87"
+rust-version = "1.91"
 license = "MIT"
 authors = ["Joshua Booth <joshua.n.booth@gmail.com>"]
 description = "High-performance 256-length array indexed by u8"
@@ -14,3 +14,4 @@ categories = ["data-structures", "no-std"]
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 inline_always = "allow"
+partialeq_ne_impl = "allow"
