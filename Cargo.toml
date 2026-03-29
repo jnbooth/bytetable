@@ -1,12 +1,12 @@
 [package]
 name = "bytetable"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT"
 authors = ["Joshua Booth <joshua.n.booth@gmail.com>"]
 description = "High-performance data structures indexed by u8"
-repository = "https://github.com/jnbooth/byte-table"
+repository = "https://github.com/jnbooth/bytetable"
 readme = "README.md"
 keywords = ["no-std", "array", "set", "table"]
 categories = ["data-structures", "no-std"]
