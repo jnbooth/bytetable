@@ -134,7 +134,7 @@ impl<T> ByteTable<T> {
     /// use bytetable::ByteTable;
     ///
     /// let table = ByteTable::generate_boxed(|n| (n as usize).pow(3));
-    /// assert_eq!(table[99], 970299);
+    /// assert_eq!(table[99], 99usize.pow(3));
     /// ```
     #[cfg(feature = "alloc")]
     #[inline]
@@ -168,7 +168,7 @@ impl<T> ByteTable<T> {
     ///
     /// let table = ByteTable::generate(|n| (n as usize) * 10);
     /// assert_eq!(*table.get(30), 300);
-    /// assert_eq!(table[30], 300); // Same effect
+    /// assert_eq!(table[30], 300); // Same effect.
     /// ```
     #[inline]
     pub fn get(&self, i: u8) -> &T {
@@ -186,7 +186,7 @@ impl<T> ByteTable<T> {
     /// let mut table = ByteTable::generate(|n| (n as usize) * 10);
     /// *table.get_mut(30) = 0;
     /// assert_eq!(table[30], 0);
-    /// table[30] = 0; // Same effect
+    /// table[30] = 0; // Same effect.
     #[inline]
     pub fn get_mut(&mut self, i: u8) -> &mut T {
         unsafe { self.table.get_unchecked_mut(i as usize) }
@@ -418,12 +418,14 @@ impl<T> IndexMut<u8> for ByteTable<T> {
 impl<T> Index<RangeFull> for ByteTable<T> {
     type Output = [T];
 
+    #[inline]
     fn index(&self, index: RangeFull) -> &Self::Output {
         // SAFETY: `RangeFull` is always a valid index.
         unsafe { self.table.get_unchecked(index) }
     }
 }
 impl<T> IndexMut<RangeFull> for ByteTable<T> {
+    #[inline]
     fn index_mut(&mut self, index: RangeFull) -> &mut Self::Output {
         // SAFETY: `RangeFull` is always a valid index.
         unsafe { self.table.get_unchecked_mut(index) }

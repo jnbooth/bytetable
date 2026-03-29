@@ -886,33 +886,8 @@ macro_rules! impl_into_iter {
     };
 }
 
-macro_rules! impl_iter_inner {
-    () => {
-        #[inline]
-        fn size_hint(&self) -> (usize, Option<usize>) {
-            let exact = self.len();
-            (exact, Some(exact))
-        }
-
-        #[inline]
-        fn min(mut self) -> Option<u8> {
-            self.next()
-        }
-
-        #[inline]
-        fn max(mut self) -> Option<u8> {
-            self.next_back()
-        }
-
-        #[inline]
-        fn is_sorted(self) -> bool {
-            true
-        }
-    };
-}
-
 macro_rules! impl_iter {
-    ($t:ty, $f:expr) => {
+    ($t:ty) => {
         impl Iterator for $t {
             type Item = u8;
 
@@ -921,7 +896,26 @@ macro_rules! impl_iter {
                 self.inner.find(|&byte| self.set.contains(byte))
             }
 
-            impl_iter_inner!();
+            #[inline]
+            fn size_hint(&self) -> (usize, Option<usize>) {
+                let exact = self.len();
+                (exact, Some(exact))
+            }
+
+            #[inline]
+            fn min(mut self) -> Option<u8> {
+                self.next()
+            }
+
+            #[inline]
+            fn max(mut self) -> Option<u8> {
+                self.next_back()
+            }
+
+            #[inline]
+            fn is_sorted(self) -> bool {
+                true
+            }
         }
 
         impl DoubleEndedIterator for $t {
@@ -948,7 +942,7 @@ pub struct Iter<'a> {
     set: &'a ByteSet,
     inner: RangeInclusive<u8>,
 }
-impl_iter!(Iter<'_>, self.set.contains(byte));
+impl_iter!(Iter<'_>);
 
 impl<'a> IntoIterator for &'a ByteSet {
     impl_into_iter!(Iter<'a>);
@@ -960,7 +954,7 @@ pub struct IntoIter {
     set: ByteSet,
     inner: RangeInclusive<u8>,
 }
-impl_iter!(IntoIter, self.set.contains(byte));
+impl_iter!(IntoIter);
 
 impl IntoIterator for ByteSet {
     impl_into_iter!(IntoIter);
@@ -990,16 +984,24 @@ where
         Some(next)
     }
 
-    impl_iter_inner!();
-}
-
-impl<F> ExactSizeIterator for ExtractIf<'_, F>
-where
-    F: FnMut(u8) -> bool,
-{
     #[inline]
-    fn len(&self) -> usize {
-        self.set.len_in_range(&self.inner)
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (0, Some(self.inner.len()))
+    }
+
+    #[inline]
+    fn min(mut self) -> Option<u8> {
+        self.next()
+    }
+
+    #[inline]
+    fn max(mut self) -> Option<u8> {
+        self.next_back()
+    }
+
+    #[inline]
+    fn is_sorted(self) -> bool {
+        true
     }
 }
 
@@ -1015,3 +1017,84 @@ where
 }
 
 impl<F> FusedIterator for ExtractIf<'_, F> where F: FnMut(u8) -> bool {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn range_lt() {
+        let mut set = ByteSet::full();
+        for i in (0..=255).rev() {
+            set.remove(i);
+            assert_eq!(ByteSet::from(..i), set);
+        }
+    }
+
+    #[test]
+    fn range_lte() {
+        let mut set = ByteSet::full();
+        assert_eq!(ByteSet::from(..=255), set);
+        for i in (0..=254).rev() {
+            set.remove(i + 1);
+            assert_eq!(ByteSet::from(..=i), set);
+        }
+    }
+
+    #[test]
+    fn range_gt() {
+        let mut set = ByteSet::full();
+        assert_eq!(set, ByteSet::from(0..));
+        for i in 1..=255 {
+            set.remove(i - 1);
+            assert_eq!(ByteSet::from(i..), set);
+        }
+    }
+
+    #[test]
+    fn range_full() {
+        assert_eq!(ByteSet::from(..), ByteSet::full());
+    }
+
+    #[test]
+    fn range_empty() {
+        assert_eq!(ByteSet::from(10..10), ByteSet::new());
+    }
+
+    #[test]
+    fn range_single() {
+        assert_eq!(ByteSet::from(10..=10), ByteSet::new() | 10);
+    }
+
+    #[test]
+    fn max() {
+        let mut set = ByteSet::new();
+        for i in 0..=255 {
+            set.insert(i);
+            assert_eq!(set.max(), Some(i));
+            set.remove(i);
+        }
+    }
+
+    #[test]
+    fn min() {
+        let mut set = ByteSet::new();
+        for i in 0..=255 {
+            set.insert(i);
+            assert_eq!(set.min(), Some(i));
+            set.remove(i);
+        }
+    }
+
+    #[test]
+    fn iter_len() {
+        let mut iter = ByteSet::from(&[10, 20, 30, 60, 90, 100]).into_iter();
+        assert_eq!(iter.len(), 6);
+        iter.next();
+        iter.next_back();
+        assert_eq!(iter.len(), 4);
+        iter.nth(10);
+        assert_eq!(iter.len(), 0);
+        assert_eq!(ByteSet::new().into_iter().len(), 0);
+    }
+}
