@@ -1,21 +1,21 @@
-# `byte-table`
+# `bytetable`
 
-High-performance 256-length array indexed by `u8`. Uses `#![no_std]`.
+High-performance data structures indexed by `u8`. Uses `#![no_std]`.
 
-[![crates.io](https://img.shields.io/crates/v/byte-table.svg)](https://crates.io/crates/byte-table)
-[![Documentation](https://docs.rs/byte-table/badge.svg)](https://docs.rs/byte-table)
+[![crates.io](https://img.shields.io/crates/v/bytetable.svg)](https://crates.io/crates/bytetable)
+[![Documentation](https://docs.rs/bytetable/badge.svg)](https://docs.rs/bytetable)
 ![MIT licensed](https://img.shields.io/crates/l/byte-tble.svg)
 <br />
-[![Dependency Status](https://deps.rs/crate/byte-table/latest/status.svg)](https://deps.rs/crate/byte-table)
-![Downloads](https://img.shields.io/crates/d/byte-table.svg)
+[![Dependency Status](https://deps.rs/crate/bytetable/latest/status.svg)](https://deps.rs/crate/bytetable)
+![Downloads](https://img.shields.io/crates/d/bytetable.svg)
 
 ## Usage
 
-To use `byte-table`, first add this to your `Cargo.toml`:
+To use `bytetable`, first add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-byte-table = "1"
+bytetable = "1"
 ```
 
 Next, add this to your crate:
@@ -24,6 +24,10 @@ Next, add this to your crate:
 use byte_table::ByteTable;
 ```
 
+## no_std support
+
+`bytetable` is completely implemented in the no_std environment. The `alloc` feature (enabled by default) adds support for creating data structures on the heap with `Box`. Passing `default-features = false` disables the `alloc` feature, removing its dependency on `extern crate alloc`.
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
@@ -31,5 +35,5 @@ This project is licensed under the [MIT license](LICENSE).
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in `byte-table` by you, shall be licensed as MIT, without any
+for inclusion in `bytetable` by you, shall be licensed as MIT, without any
 additional terms or conditions.

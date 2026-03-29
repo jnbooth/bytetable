@@ -1,17 +1,22 @@
 [package]
-name = "byte-table"
+name = "bytetable"
 version = "1.0.0"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT"
 authors = ["Joshua Booth <joshua.n.booth@gmail.com>"]
-description = "High-performance 256-length array indexed by u8"
+description = "High-performance data structures indexed by u8"
 repository = "https://github.com/jnbooth/byte-table"
 readme = "README.md"
-keywords = ["no-std", "array", "table"]
+keywords = ["no-std", "array", "set", "table"]
 categories = ["data-structures", "no-std"]
+
+[features]
+default = ["alloc"]
+alloc = []
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 inline_always = "allow"
+must_use_candidate = "allow"
 partialeq_ne_impl = "allow"
