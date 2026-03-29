@@ -21,7 +21,7 @@ bytetable = "1"
 Next, add this to your crate:
 
 ```rust
-use byte_table::ByteTable;
+use bytetable::ByteTable;
 ```
 
 ## no_std support
