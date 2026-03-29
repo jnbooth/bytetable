@@ -400,7 +400,7 @@ impl ByteSet {
     pub const fn is_subset(&self, other: &Self) -> bool {
         let [a0, a1, a2, a3] = self.bytes;
         let [b0, b1, b2, b3] = other.bytes;
-        (a0 | b0) == b0 && (a1 | b1) == b2 && (a2 | b2) == b2 && (a3 & b3) == b3
+        (a0 | b0) == b0 && (a1 | b1) == b1 && (a2 | b2) == b2 && (a3 | b3) == b3
     }
 
     /// Returns `true` if the set is a superset of another,
