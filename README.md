@@ -4,7 +4,7 @@ High-performance data structures indexed by `u8`. Uses `#![no_std]`.
 
 [![crates.io](https://img.shields.io/crates/v/bytetable.svg)](https://crates.io/crates/bytetable)
 [![Documentation](https://docs.rs/bytetable/badge.svg)](https://docs.rs/bytetable)
-![MIT licensed](https://img.shields.io/crates/l/byte-tble.svg)
+![MIT licensed](https://img.shields.io/crates/l/bytetable.svg)
 <br />
 [![Dependency Status](https://deps.rs/crate/bytetable/latest/status.svg)](https://deps.rs/crate/bytetable)
 ![Downloads](https://img.shields.io/crates/d/bytetable.svg)
