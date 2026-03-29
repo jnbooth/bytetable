@@ -12,6 +12,7 @@
 //!   for bounds checking. Useful for caching expensive operations on `u8`s.
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;

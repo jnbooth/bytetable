@@ -31,7 +31,7 @@ use alloc::boxed::Box;
 /// use bytetable::ByteTable;
 ///
 /// let table = ByteTable::generate(|n| (n as usize).pow(3));
-/// assert_eq!(table[99], 970299);
+/// assert_eq!(table[99], 99usize.pow(3));
 /// ```
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -104,7 +104,7 @@ impl<T> ByteTable<T> {
     /// use bytetable::ByteTable;
     ///
     /// let table = ByteTable::generate(|n| (n as usize).pow(3));
-    /// assert_eq!(table[99], 970299);
+    /// assert_eq!(table[99], 99usize.pow(3));
     /// ```
     #[inline]
     pub fn generate<F>(generator: F) -> Self
@@ -159,7 +159,7 @@ impl<T> ByteTable<T> {
     }
 
     /// Returns a reference to the item at the specified byte index.
-    /// This function never panics. It is indentical to an indexing operation.
+    /// This function is indentical to an indexing operation.
     ///
     /// # Examples
     ///
@@ -176,7 +176,7 @@ impl<T> ByteTable<T> {
     }
 
     /// Returns a mutable reference to the item at the specified byte index.
-    /// This function never panics. It is indentical to an indexing operation.
+    /// This function is indentical to an indexing operation.
     ///
     /// # Examples
     ///

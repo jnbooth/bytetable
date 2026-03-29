@@ -1,6 +1,6 @@
 [package]
 name = "bytetable"
-version = "1.0.4"
+version = "1.0.5"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT"
@@ -10,6 +10,10 @@ repository = "https://github.com/jnbooth/bytetable"
 readme = "README.md"
 keywords = ["no-std", "array", "set", "table"]
 categories = ["data-structures", "no-std"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["alloc"]

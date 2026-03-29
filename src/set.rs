@@ -15,21 +15,32 @@ use core::ops::{
 /// ```
 /// use bytetable::ByteSet;
 ///
-/// let mut set = ByteSet::new() | (18..28) | (6..=10);
-/// set.insert(100);
+/// let mut set = ByteSet::from(18..28) | (6..=10);
+///
 /// assert!(set.contains(20));
 /// set.remove(20);
 /// assert!(!set.contains(20));
+///
+/// set.insert(100);
 /// assert_eq!(set.min(), Some(6));
 /// assert_eq!(set.max(), Some(100));
+///
 /// let els = set.into_iter().collect::<Vec<u8>>();
 /// assert_eq!(els, [6, 7, 8, 9, 10, 18, 19, 21, 22, 23, 24, 25, 26, 27, 100]);
 /// assert_eq!(set.len(), 15);
 /// ```
 #[repr(transparent)]
-#[derive(Copy, Clone, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct ByteSet {
     bytes: [u64; 4],
+}
+
+impl Default for ByteSet {
+    /// Creates an empty `ByteSet`.
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ByteSet {
@@ -429,7 +440,6 @@ impl ByteSet {
         other.is_subset(self)
     }
 
-    /// Returns `true` if `self` has no elements in common with `other`.
     /// Equivalent to [`self == other`](ByteSet::eq), but can be used
     /// in constant contexts.
     ///
