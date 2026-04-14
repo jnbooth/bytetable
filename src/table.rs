@@ -172,6 +172,7 @@ impl<T> ByteTable<T> {
     /// ```
     #[inline]
     pub fn get(&self, i: u8) -> &T {
+        // SAFETY: any u8 (0..256) is a valid index for [T; 256].
         unsafe { self.table.get_unchecked(i as usize) }
     }
 
@@ -189,6 +190,7 @@ impl<T> ByteTable<T> {
     /// table[30] = 0; // Same effect.
     #[inline]
     pub fn get_mut(&mut self, i: u8) -> &mut T {
+        // SAFETY: any u8 (0..256) is a valid index for [T; 256].
         unsafe { self.table.get_unchecked_mut(i as usize) }
     }
 
