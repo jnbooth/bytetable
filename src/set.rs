@@ -5,7 +5,7 @@ use core::hint::unreachable_unchecked;
 use core::iter::FusedIterator;
 use core::ops::{
     BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Bound, Index, Not, RangeBounds,
-    RangeFull, RangeInclusive,
+    RangeFull, RangeInclusive, RangeTo,
 };
 
 /// A set of `u8`s, implemented as a bit array.
@@ -68,6 +68,7 @@ impl ByteSet {
     ///
     /// let set = ByteSet::full();
     /// assert_eq!(set.len(), 256);
+    /// assert_eq!(set, ByteSet::from(..));
     /// ```
     #[inline]
     pub const fn full() -> Self {
@@ -221,6 +222,31 @@ impl ByteSet {
                 self.remove(i);
             }
         }
+    }
+
+    /// Returns a new set that contains only the elements specified by the predicate.
+    ///
+    /// In other words, contains all elements `e` for which `f(e)` returns `true`.
+    /// The elements are visited in ascending order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use bytetable::ByteSet;
+    ///
+    /// let mut set = ByteSet::from(1..=6);
+    /// let evens = set.filter(|k| k % 2 == 0);
+    /// assert_eq!(evens, [2, 4, 6].into());
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn filter<F>(&self, f: F) -> Self
+    where
+        F: FnMut(u8) -> bool,
+    {
+        let mut set = *self;
+        set.retain(f);
+        set
     }
 
     /// Clears the set, removing all values.
@@ -585,30 +611,37 @@ impl ByteSet {
     /// assert_eq!(SET, ByteSet::from(..10));
     #[inline]
     pub const fn from_bounds(start: Bound<u8>, end: Bound<u8>) -> Self {
-        let [start0, start1, start2, start3] = match start {
-            Bound::Unbounded => [0; 4],
-            Bound::Included(n) => Self::mask_less_than(n),
-            Bound::Excluded(n) => match n.checked_add(1) {
-                Some(n) => Self::mask_less_than(n),
-                None => [u64::MAX; 4],
-            },
-        };
-        let [end0, end1, end2, end3] = match end {
-            Bound::Unbounded => [u64::MAX; 4],
-            Bound::Excluded(n) => Self::mask_less_than(n),
-            Bound::Included(n) => match n.checked_add(1) {
-                Some(n) => Self::mask_less_than(n),
-                None => [u64::MAX; 4],
-            },
-        };
-        Self {
-            bytes: [
-                !start0 & end0,
-                !start1 & end1,
-                !start2 & end2,
-                !start3 & end3,
-            ],
+        /// Constructs a set containing all values less than `range.end`.
+        #[inline]
+        const fn mask(range: RangeTo<Option<u8>>) -> ByteSet {
+            let Some(end) = range.end else {
+                return ByteSet::full();
+            };
+            let (high, low) = ByteSet::indices(end);
+            let mask = low - 1;
+            let bytes = match high {
+                0 => [mask, 0, 0, 0],
+                1 => [u64::MAX, mask, 0, 0],
+                2 => [u64::MAX, u64::MAX, mask, 0],
+                3 => [u64::MAX, u64::MAX, u64::MAX, mask],
+                // SAFETY: The maximum value of `u8` is 255. 255 >> 6 is 3.
+                _ => unsafe { unreachable_unchecked() },
+            };
+            ByteSet { bytes }
         }
+
+        let max = match end {
+            Bound::Unbounded => None,
+            Bound::Excluded(n) => Some(n),
+            Bound::Included(n) => n.checked_add(1),
+        };
+        let set = mask(..max);
+        let min = match start {
+            Bound::Unbounded => return set,
+            Bound::Included(n) => Some(n),
+            Bound::Excluded(n) => n.checked_add(1),
+        };
+        set.difference(mask(..min))
     }
 
     /// The first value is the array index (0..4) of the associated `u64`.
@@ -631,22 +664,6 @@ impl ByteSet {
             }
         }
         Self::from_bounds(copy_bound(start), copy_bound(end))
-    }
-
-    /// Constructs a set containing all values less than `i`.
-    /// Equivalent to `ByteSet::from(..i)`.
-    #[inline]
-    const fn mask_less_than(i: u8) -> [u64; 4] {
-        let (high, low) = Self::indices(i);
-        let mask = low - 1;
-        match high {
-            0 => [mask, 0, 0, 0],
-            1 => [u64::MAX, mask, 0, 0],
-            2 => [u64::MAX, u64::MAX, mask, 0],
-            3 => [u64::MAX, u64::MAX, u64::MAX, mask],
-            // SAFETY: The maximum value of `u8` is 255. 255 >> 6 is 3.
-            _ => unsafe { unreachable_unchecked() },
-        }
     }
 
     /// Constructs an inclusive range from [`min`] to [`max`].
