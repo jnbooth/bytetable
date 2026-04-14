@@ -234,7 +234,7 @@ impl ByteSet {
     /// ```
     /// use bytetable::ByteSet;
     ///
-    /// let mut set = ByteSet::from(1..=6);
+    /// let set = ByteSet::from(1..=6);
     /// let evens = set.filter(|k| k % 2 == 0);
     /// assert_eq!(evens, [2, 4, 6].into());
     /// ```
