@@ -282,11 +282,13 @@ impl<T> DerefMut for ByteTable<T> {
 }
 
 impl<T> AsRef<[T]> for ByteTable<T> {
+    #[inline]
     fn as_ref(&self) -> &[T] {
         self.as_slice()
     }
 }
 impl<T> AsMut<[T]> for ByteTable<T> {
+    #[inline]
     fn as_mut(&mut self) -> &mut [T] {
         self.as_mut_slice()
     }
@@ -344,6 +346,7 @@ impl<T> IntoIterator for ByteTable<T> {
 
     type IntoIter = IntoIter<T>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.table.into_iter()
     }
@@ -354,6 +357,7 @@ impl<'a, T> IntoIterator for &'a ByteTable<T> {
 
     type IntoIter = Iter<'a, T>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.table.iter()
     }
@@ -364,6 +368,7 @@ impl<'a, T> IntoIterator for &'a mut ByteTable<T> {
 
     type IntoIter = IterMut<'a, T>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.table.iter_mut()
     }
