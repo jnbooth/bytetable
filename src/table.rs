@@ -36,7 +36,7 @@ use alloc::boxed::Box;
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ByteTable<T> {
-    table: [T; 256],
+    base: [T; 256],
 }
 
 impl<T: Default> Default for ByteTable<T> {
@@ -71,7 +71,7 @@ impl<T> ByteTable<T> {
     /// ```
     #[inline]
     pub const fn new(table: [T; 256]) -> Self {
-        Self { table }
+        Self { base: table }
     }
 
     /// Deconstructs the `ByteTable` into its inner array.
@@ -86,7 +86,7 @@ impl<T> ByteTable<T> {
     /// ```
     #[inline]
     pub fn into_array(self) -> [T; 256] {
-        self.table
+        self.base
     }
 
     /// Creates a new `ByteTable` on the stack using the provided function to
@@ -122,7 +122,7 @@ impl<T> ByteTable<T> {
             // there's no need for `mem::forget` because `MaybeUninit` obviates drop logic.
             //
             // See https://github.com/rust-lang/rust/issues/47966#issuecomment-606905342.
-            table: unsafe { table.as_ptr().cast::<[T; 256]>().read() },
+            base: unsafe { table.as_ptr().cast::<[T; 256]>().read() },
         }
     }
 
@@ -173,7 +173,7 @@ impl<T> ByteTable<T> {
     #[inline]
     pub fn get(&self, i: u8) -> &T {
         // SAFETY: any u8 (0..256) is a valid index for [T; 256].
-        unsafe { self.table.get_unchecked(i as usize) }
+        unsafe { self.base.get_unchecked(i as usize) }
     }
 
     /// Returns a mutable reference to the item at the specified byte index.
@@ -191,7 +191,7 @@ impl<T> ByteTable<T> {
     #[inline]
     pub fn get_mut(&mut self, i: u8) -> &mut T {
         // SAFETY: any u8 (0..256) is a valid index for [T; 256].
-        unsafe { self.table.get_unchecked_mut(i as usize) }
+        unsafe { self.base.get_unchecked_mut(i as usize) }
     }
 
     /// Returns a `ByteTable` with the function `f` applied to each element in
@@ -215,7 +215,7 @@ impl<T> ByteTable<T> {
         F: FnMut(T) -> U,
     {
         ByteTable {
-            table: self.table.map(f),
+            base: self.base.map(f),
         }
     }
 
@@ -225,7 +225,7 @@ impl<T> ByteTable<T> {
     #[inline]
     pub const fn each_ref(&self) -> ByteTable<&T> {
         ByteTable {
-            table: self.table.each_ref(),
+            base: self.base.each_ref(),
         }
     }
 
@@ -235,7 +235,7 @@ impl<T> ByteTable<T> {
     #[inline]
     pub const fn each_mut(&mut self) -> ByteTable<&mut T> {
         ByteTable {
-            table: self.table.each_mut(),
+            base: self.base.each_mut(),
         }
     }
 
@@ -243,26 +243,26 @@ impl<T> ByteTable<T> {
     /// Equivalent to `&s[..]`.
     #[inline]
     pub const fn as_slice(&self) -> &[T] {
-        &self.table
+        &self.base
     }
 
     /// Returns a mutable slice containing the entire table.
     /// Equivalent to `&mut s[..]`.
     #[inline]
     pub const fn as_mut_slice(&mut self) -> &mut [T] {
-        &mut self.table
+        &mut self.base
     }
 
     /// Returns an array reference containing the entire table.
     #[inline]
     pub const fn as_array(&self) -> &[T; 256] {
-        &self.table
+        &self.base
     }
 
     /// Returns a mutable array reference containing the entire table.
     #[inline]
     pub const fn as_array_mut(&mut self) -> &mut [T; 256] {
-        &mut self.table
+        &mut self.base
     }
 }
 
@@ -271,13 +271,13 @@ impl<T> Deref for ByteTable<T> {
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        &self.table
+        &self.base
     }
 }
 impl<T> DerefMut for ByteTable<T> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.table
+        &mut self.base
     }
 }
 
@@ -317,7 +317,7 @@ impl<T> From<[T; 256]> for ByteTable<T> {
 impl<T> From<ByteTable<T>> for [T; 256] {
     #[inline]
     fn from(value: ByteTable<T>) -> Self {
-        value.table
+        value.base
     }
 }
 
@@ -348,7 +348,7 @@ impl<T> IntoIterator for ByteTable<T> {
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.table.into_iter()
+        self.base.into_iter()
     }
 }
 
@@ -359,7 +359,7 @@ impl<'a, T> IntoIterator for &'a ByteTable<T> {
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.table.iter()
+        self.base.iter()
     }
 }
 
@@ -370,7 +370,7 @@ impl<'a, T> IntoIterator for &'a mut ByteTable<T> {
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        self.table.iter_mut()
+        self.base.iter_mut()
     }
 }
 
@@ -379,22 +379,22 @@ macro_rules! impl_eq {
         impl<U, T: PartialEq<U>> PartialEq<$t> for ByteTable<T> {
             #[inline]
             fn eq(&self, other: &$t) -> bool {
-                self.table == $($d)* other
+                self.base == $($d)* other
             }
             #[inline]
             fn ne(&self, other: &$t) -> bool {
-                self.table != $($d)* other
+                self.base != $($d)* other
             }
         }
 
         impl<T, U: PartialEq<T>> PartialEq<ByteTable<T>> for $t {
             #[inline]
             fn eq(&self, other: &ByteTable<T>) -> bool {
-                $($d)* self == other.table
+                $($d)* self == other.base
             }
             #[inline]
             fn ne(&self, other: &ByteTable<T>) -> bool {
-                $($d)* self != other.table
+                $($d)* self != other.base
             }
         }
     };
@@ -428,14 +428,14 @@ impl<T> Index<RangeFull> for ByteTable<T> {
     #[inline]
     fn index(&self, index: RangeFull) -> &Self::Output {
         // SAFETY: `RangeFull` is always a valid index.
-        unsafe { self.table.get_unchecked(index) }
+        unsafe { self.base.get_unchecked(index) }
     }
 }
 impl<T> IndexMut<RangeFull> for ByteTable<T> {
     #[inline]
     fn index_mut(&mut self, index: RangeFull) -> &mut Self::Output {
         // SAFETY: `RangeFull` is always a valid index.
-        unsafe { self.table.get_unchecked_mut(index) }
+        unsafe { self.base.get_unchecked_mut(index) }
     }
 }
 
@@ -452,14 +452,14 @@ macro_rules! unsafe_impl_index {
             #[inline]
             fn index(&self, index: $idx) -> &Self::Output {
                 let index = $f(index);
-                unsafe { self.table.get_unchecked(index) }
+                unsafe { self.base.get_unchecked(index) }
             }
         }
         impl<T> IndexMut<$idx> for ByteTable<T> {
             #[inline]
             fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
                 let index = $f(index);
-                unsafe { self.table.get_unchecked_mut(index) }
+                unsafe { self.base.get_unchecked_mut(index) }
             }
         }
     };
