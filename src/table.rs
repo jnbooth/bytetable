@@ -527,3 +527,79 @@ const fn convert_bounds(bounds: (Bound<u8>, Bound<u8>)) -> (Bound<usize>, Bound<
 }
 // SAFETY: Converted bounds cannot exceed 255.
 unsafe_impl_index!((Bound<u8>, Bound<u8>), convert_bounds);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ARRAY: [usize; 256] = {
+        let mut array = [0; 256];
+        let mut i = 0;
+        while i < array.len() {
+            array[i] = i * 10;
+            i += 1;
+        }
+        array
+    };
+
+    macro_rules! assert_slice_index {
+        ($($t:tt)+) => {
+            let bytetable = ByteTable::new(ARRAY);
+            assert_eq!(bytetable[$($t)+], ARRAY[$($t)+]);
+        };
+    }
+
+    #[test]
+    fn index_low() {
+        assert_slice_index!(0);
+    }
+
+    #[test]
+    fn index_high() {
+        assert_slice_index!(255);
+    }
+
+    #[test]
+    fn index_full() {
+        assert_slice_index!(..);
+    }
+
+    #[test]
+    fn index_range() {
+        assert_slice_index!(10..15);
+    }
+
+    #[test]
+    fn index_range_from() {
+        assert_slice_index!(250..);
+    }
+
+    #[test]
+    fn index_range_to() {
+        assert_slice_index!(..7);
+    }
+
+    #[test]
+    fn index_range_to_inclusive() {
+        assert_slice_index!(..=5);
+    }
+
+    #[test]
+    fn index_range_inclusive() {
+        assert_slice_index!(250..=255);
+    }
+
+    #[test]
+    fn index_range_inclusive_exhausted() {
+        assert_slice_index!({
+            let mut range = 250..=255;
+            range.nth(10);
+            range
+        });
+    }
+
+    #[test]
+    fn index_bounds() {
+        assert_slice_index!((Bound::Included(10), Bound::Included(12)));
+    }
+}
