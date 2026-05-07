@@ -452,6 +452,7 @@ macro_rules! unsafe_impl_index {
             #[inline]
             fn index(&self, index: $idx) -> &Self::Output {
                 let index = $f(index);
+                // SAFETY: `index` is in-bounds.
                 unsafe { self.base.get_unchecked(index) }
             }
         }
@@ -459,6 +460,7 @@ macro_rules! unsafe_impl_index {
             #[inline]
             fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
                 let index = $f(index);
+                // SAFETY: `index` is in-bounds.
                 unsafe { self.base.get_unchecked_mut(index) }
             }
         }
